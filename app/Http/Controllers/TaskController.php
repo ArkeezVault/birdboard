@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use Illuminate\Http\Request;
+use App\Models\Project;
+
 
 class TaskController extends Controller
 {
@@ -33,9 +35,17 @@ class TaskController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request,Project $project)
     {
-        //
+        $validated = $request->validate([
+            'body' => 'required',
+        ]);
+        
+        $task = $project->addTask($validated['body']);
+        return response()->json([
+            'message' => 'task successfully added',
+            'task' => $task
+        ], 201);
     }
 
     /**
@@ -67,9 +77,29 @@ class TaskController extends Controller
      * @param  \App\Models\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Task $task)
+    public function update(Request $request, Project $project, Task $task)
     {
-        //
+        $validated = $request->validate([
+            'body' => 'required',
+        ]);
+        
+        $task->update([
+            'body' => $validated['body'],
+            //'user_id' => auth()->id(),
+        ]);
+
+        if(request('completed'))
+         {
+            $task->complete();
+         }
+        else
+        {
+            $task->incomplete();
+        }
+        return response()->json([
+            'message' => 'task successfully updated',
+            'task' => $task
+        ], 201);
     }
 
     /**

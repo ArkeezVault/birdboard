@@ -14,7 +14,9 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        //
+        $projects = auth()->user()->projects;
+        return response()->json($projects);
+        //return view('projects.index',compact('projects'));
     }
 
     /**
@@ -35,7 +37,17 @@ class ProjectController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'title' => 'sometimes|required',
+            'description' => 'sometimes|required|max:100',
+        ]);
+        
+        $project = auth()->user()->projects()->create($validated); 
+
+        return response()->json([
+        'message' => 'project successfully added',
+        'project' => $project
+        ], 201);
     }
 
     /**
@@ -46,7 +58,9 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        //
+        $this->authorize('update',$project);
+
+        return response()->json($project);
     }
 
     /**
@@ -69,7 +83,20 @@ class ProjectController extends Controller
      */
     public function update(Request $request, Project $project)
     {
-        //
+        $this->authorize('update',$project);
+
+        $validated = $request->validate([
+            'title' => 'sometimes|required',
+            'description' => 'sometimes|required|max:100',
+        ]);
+       
+        $project->update($validated);
+
+        return response()->json([
+            'message' => 'project successfully updated',
+            'project' => $project
+        ], 201);
+        
     }
 
     /**
@@ -80,6 +107,12 @@ class ProjectController extends Controller
      */
     public function destroy(Project $project)
     {
-        //
+        $this->authorize('delete',$project);
+
+        $project->delete();
+
+        return response()->json([
+            'message' => 'project successfully deleted'
+        ], 201);
     }
 }

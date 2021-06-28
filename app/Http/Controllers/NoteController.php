@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Note;
 use Illuminate\Http\Request;
+use App\Models\Project;
+
 
 class NoteController extends Controller
 {
@@ -33,9 +35,17 @@ class NoteController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request,Project $project)
     {
-        //
+        $validated = $request->validate([
+            'body' => 'required',
+        ]);
+        
+        $note = $project->addNote($validated['body']);
+        return response()->json([
+            'message' => 'note successfully added',
+            'note' => $note
+        ], 201);
     }
 
     /**
@@ -67,10 +77,21 @@ class NoteController extends Controller
      * @param  \App\Models\Note  $note
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Note $note)
+    public function update(Request $request, Project $project, Note $note)
     {
-        //
+        $validated = $request->validate([
+            'body' => 'required',
+        ]);
+        
+        $note->update([
+            'body' => $validated['body'],
+        ]);
+        return response()->json([
+            'message' => 'note successfully updated',
+            'note' => $note
+        ], 201);
     }
+
 
     /**
      * Remove the specified resource from storage.
