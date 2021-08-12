@@ -8,9 +8,9 @@
         <title>birdboard</title>
         <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     </head>
-    <body>
-       <div id="app">
-        <router-view></router-view>
+    <body class="bg-gray-500">
+       <div id="app" class="">
+            <router-view></router-view>
        </div>
 
        {{-- Vue --}}

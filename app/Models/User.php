@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Models;
+use Illuminate\Database\Eloquent\Model;
+
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -8,9 +10,12 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
+
 class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
+
+    protected $table = 'users';
 
     /**
      * The attributes that are mass assignable.
@@ -62,6 +67,25 @@ class User extends Authenticatable implements JWTSubject
 
     public function projects()
     {
-        return $this->hasMany(Project::class,'owner_id');
+        return $this->hasMany(Project::class,'owner_id')->latest();
+    }
+
+    public function accessableProject()
+    {
+        $createdProject = $this->projects;
+
+       $ids = \DB::table('project_members')->where('user_id',$this->id)->pluck('project_id');
+       $sharedWithProjects = Project::find($ids);
+
+       return $createdProject->merge($sharedWithProjects);
+        //use this or the below one
+
+
+    //    return Project::where('owner_id',$this->id)
+    //                     ->orWhereHas('members' , function ($query){
+    //                         $query->where('user_id', $this->id);
+    //                     })
+    //                     ->get();
+
     }
 }

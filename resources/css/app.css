@@ -2,4 +2,11 @@
 
 @import "tailwindcss/components";
 
+.card-project{
+    @apply bg-white shadow rounded text-gray-900; 
+}
+.card{
+    @apply flex flex-col flex-wrap  justify-around m-2 p-2 bg-white shadow-lg h-28 w-44 text-gray-900 text-center font-semibold rounded-md;
+}
+
 @import "tailwindcss/utilities";

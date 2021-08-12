@@ -25,7 +25,7 @@ class Project extends Model
 
     public function tasks()
     {
-        return $this->hasMany(Task::class);
+        return $this->hasMany(Task::class)->latest();
     }
 
     public function addTask($body)
@@ -47,7 +47,7 @@ class Project extends Model
     
     public function activity()
     {
-        return $this->hasMany(Activity::class);
+        return $this->hasMany(Activity::class)->latest();
     }
     
     public function members()
@@ -60,13 +60,15 @@ class Project extends Model
         {
             if ($this->owner_id == $user->id)
             {
-                return redirect($this->path())->with('msg', 'You are the owner already!');
+                //return redirect($this->path())->with('msg', 'You are the owner already!');
+                return response()->json(['msg' => 'You are the owner already!'],203);
             }
             return $this->members()->attach($user);
         }
         else
         {
-            return redirect($this->path())->with('msg', 'user already invited!');
+            //return redirect($this->path())->with('msg', 'user already invited!');
+            return response()->json(['msg' => 'user already invited!'],203);
         }
     }
 

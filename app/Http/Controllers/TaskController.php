@@ -5,18 +5,27 @@ namespace App\Http\Controllers;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use App\Models\Project;
+use Illuminate\Auth\GuardHelpers;
+
+use Illuminate\Support\Facades\Validator;
+
+
+use JWTAuth;
 
 
 class TaskController extends Controller
 {
+    use GuardHelpers;
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index($id)
     {
-        //
+        $project = project::findOrFail($id);
+        $tasks = $project->tasks;
+        return response()->json($tasks);
     }
 
     /**
@@ -37,15 +46,28 @@ class TaskController extends Controller
      */
     public function store(Request $request,Project $project)
     {
-        $validated = $request->validate([
-            'body' => 'required',
+        // $validated = $request->validate([
+        //     'body' => 'required',
+        // ]);
+
+        $validated = Validator::make($request->all(), [
+            'body' => 'required|max:25',
         ]);
+
+        if ($validated->fails()) 
+        {
+            return response()->json(['errors' => $validated->errors()], 422);
+        }
+        else
+        {
+            $task = $project->addTask($request->get('body'));
+            return response()->json([
+                'message' => 'task successfully added',
+                'data' => $task
+            ], 201);
+        }
         
-        $task = $project->addTask($validated['body']);
-        return response()->json([
-            'message' => 'task successfully added',
-            'task' => $task
-        ], 201);
+        
     }
 
     /**
@@ -79,27 +101,37 @@ class TaskController extends Controller
      */
     public function update(Request $request, Project $project, Task $task)
     {
-        $validated = $request->validate([
-            'body' => 'required',
-        ]);
-        
-        $task->update([
-            'body' => $validated['body'],
-            //'user_id' => auth()->id(),
+        // $validated = $request->validate([
+        //     'body' => 'required',
+        // ]);
+
+        $validated = Validator::make($request->all(), [
+            'body' => 'required|max:25',
         ]);
 
-        if(request('completed'))
-         {
-            $task->complete();
-         }
+        if ($validated->fails()) 
+        {
+            return response()->json(['errors' => $validated->errors()], 422);
+        }
         else
         {
-            $task->incomplete();
+            $task->update([
+                'body' => $request->get('body'),
+            ]);
+    
+            if(request('completed'))
+             {
+                $task->complete();
+             }
+            else
+            {
+                $task->incomplete();
+            }
+            return response()->json([
+                'message' => 'task successfully updated',
+                'data' => $task
+            ], 201);
         }
-        return response()->json([
-            'message' => 'task successfully updated',
-            'task' => $task
-        ], 201);
     }
 
     /**
@@ -108,8 +140,12 @@ class TaskController extends Controller
      * @param  \App\Models\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Task $task)
+    public function destroy(Project $project, Task $task)
     {
-        //
+        $task->delete();
+
+        return response()->json([
+            'message' => 'task successfully deleted'
+        ], 201);
     }
 }
